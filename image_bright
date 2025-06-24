@@ -1,0 +1,134 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+int ImageBrightness(unsigned char** in, unsigned char** out, int w, int h, int val);
+int ImageFlip(unsigned char** in, unsigned char** out, int w, int h, int mode);
+
+int main (void)
+{
+FILE *fp_r, *fp_w;
+
+unsigned char **img, **img_new;
+int width, height, depth;
+int i, j; // int pixel 제거
+int mod;
+
+char temp_str[200];
+char fname[100];
+char fname_new[100];
+char fpath[200] = "\"C:\\Program Files\\IrfanView\\i_view64.exe\"";
+char fpath_new[200] = "\"C:\\Program Files\\IrfanView\\i_view64.exe\"";
+
+printf("Enter the input file name: ");
+scanf("%s", fname);
+
+printf("Enter the new file name: ");
+scanf("%s", fname_new);
+
+strcat(fpath, " ");
+strcat(fpath, fname);
+system(fpath); // ✅ 원본 이미지 열기
+
+fp_r = fopen(fname, "r");
+if (fp_r == NULL)
+{
+    printf("cannot open original file\n");
+    exit(1);
+}
+
+fp_w = fopen(fname_new, "w");
+if (fp_w == NULL)
+{
+    printf("cannot open new file\n");
+    exit(1);
+}
+
+// read header
+fgets(temp_str, 50, fp_r);
+fputs(temp_str, fp_w);
+
+fgets(temp_str, 50, fp_r);
+fputs(temp_str, fp_w);
+
+fscanf(fp_r, "%d", &width);
+fscanf(fp_r, "%d", &height);
+fprintf(fp_w, "%d %d\n", width, height);
+
+fscanf(fp_r, "%d", &depth);
+fprintf(fp_w, "%d\n", depth);
+
+// 2D memory allocation
+img = (unsigned char**)malloc(width * sizeof(unsigned char*));
+img_new = (unsigned char**)malloc(width * sizeof(unsigned char*));
+for (i = 0; i < width; i++) {
+    img[i] = malloc(height * sizeof(unsigned char));
+    img_new[i] = malloc(height * sizeof(unsigned char));
+}
+
+for (i = 0; i < height; i++)
+    for (j = 0; j < width; j++)
+        fscanf(fp_r, "%d", &img[i][j]);
+
+// 밝기 조절 (비활성화)
+// printf("Enter the control value: ");
+// scanf("%d", &pixel);
+// ImageBrightness(img, img_new, width, height, pixel);
+
+// 반전 모드 입력 및 적용
+printf("Enter the mode (0: horizontal, 1: vertical): ");
+scanf("%d", &mod);
+ImageFlip(img, img_new, width, height, mod);
+
+for (i = 0; i < height; i++)
+    for (j = 0; j < width; j++)
+        fprintf(fp_w, "%d ", img_new[i][j]);
+
+fclose(fp_w);
+fclose(fp_r);
+
+for (i = 0; i < width; i++) {
+    free(img[i]);
+    free(img_new[i]);
+}
+free(img);
+free(img_new);
+
+strcat(fpath_new, " ");
+strcat(fpath_new, fname_new);
+system(fpath_new); // ✅ 변환된 이미지 열기
+
+return 0;
+}
+
+int ImageBrightness(unsigned char** in, unsigned char** out, int w, int h, int val)
+{
+int i, j, pixel;
+for (i = 0; i < h; i++)
+for (j = 0; j < w; j++) {
+pixel = in[i][j] + val;
+if (pixel > 255)
+out[i][j] = 255;
+else if(pixel < 0)
+out[i][j] = 0;
+else
+out[i][j] = pixel;
+}
+return 0;
+}
+
+int ImageFlip(unsigned char** in, unsigned char** out, int w, int h, int mode)
+{
+int i, j;
+if (mode == 0) { // horizontal flip
+for (i = 0; i < h; i++)
+for (j = 0; j < w; j++)
+out[i][j] = in[i][w - 1 - j];
+} else { // vertical flip
+for (i = 0; i < h; i++)
+for (j = 0; j < w; j++)
+out[i][j] = in[h - 1 - i][j];
+}
+return 0;
+}
+
