@@ -1,0 +1,28 @@
+#include <stdio.h>
+
+void hanoi(int n, char from, char to, char aux) {
+    if (n == 1) {
+        // 원판 1개일 때는 바로 from → to
+        printf("Move disk 1 from %c to %c\n", from, to);
+        return;
+    }
+    // 1) n-1개를 from → aux 로 이동
+    hanoi(n - 1, from, aux, to);
+    // 2) 가장 큰 원판(n)을 from → to 로 이동
+    printf("Move disk %d from %c to %c\n", n, from, to);
+    // 3) n-1개를 aux → to 로 이동
+    hanoi(n - 1, aux, to, from);
+}
+
+int main() {
+    int n;
+    printf("Enter the number of disks: ");
+    if (scanf("%d", &n) != 1 || n <= 0) {
+        printf("Invalid number of disks.\n");
+        return 1;
+    }
+
+    printf("\n-- Tower of Hanoi Moves for %d Disks --\n\n", n);
+    hanoi(n, 'A', 'C', 'B');  // A → C (using B)
+    return 0;
+}
