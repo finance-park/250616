@@ -1,0 +1,128 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define IRFANVIEW_PATH ""C:\Program Files\IrfanView\i_view64.exe""
+#define MAX_PATH_LEN 256
+
+int ImageBrightness(unsigned char** in, unsigned char** out, int w, int h, int val);
+int ImageFlip(unsigned char** in, unsigned char** out, int w, int h, int mode);
+
+int main(void)
+{
+FILE *fp_r, *fp_w;
+unsigned char **img, **img_new;
+int width, height, depth, i, j, mod;
+char temp_str[200];
+char fname[MAX_PATH_LEN];
+char fname_new[MAX_PATH_LEN];
+char cmd[MAX_PATH_LEN * 2];
+
+printf("Enter the input file name: ");
+scanf("%s", fname);
+
+printf("Enter the new file name: ");
+scanf("%s", fname_new);
+
+snprintf(cmd, sizeof(cmd), "%s %s", IRFANVIEW_PATH, fname);
+system(cmd);
+
+fp_r = fopen(fname, "r");
+if (!fp_r) {
+    perror("Cannot open original file");
+    exit(EXIT_FAILURE);
+}
+
+fp_w = fopen(fname_new, "w");
+if (!fp_w) {
+    perror("Cannot open new file");
+    fclose(fp_r);
+    exit(EXIT_FAILURE);
+}
+
+// Header 읽고 쓰기
+fgets(temp_str, sizeof(temp_str), fp_r);
+fputs(temp_str, fp_w);  // 매직넘버 (P2, P5 등)
+
+do {  // 주석 처리
+    fgets(temp_str, sizeof(temp_str), fp_r);
+    fputs(temp_str, fp_w);
+} while(temp_str[0] == '#');
+
+fscanf(fp_r, "%d %d", &width, &height);
+fprintf(fp_w, "%d %d\n", width, height);
+fscanf(fp_r, "%d", &depth);
+fprintf(fp_w, "%d\n", depth);
+
+// 메모리 할당 (행 우선)
+img = (unsigned char**)malloc(height * sizeof(unsigned char*));
+img_new = (unsigned char**)malloc(height * sizeof(unsigned char*));
+for (i = 0; i < height; i++) {
+    img[i] = (unsigned char*)malloc(width * sizeof(unsigned char));
+    img_new[i] = (unsigned char*)malloc(width * sizeof(unsigned char));
+}
+
+// 이미지 데이터 읽기
+for (i = 0; i < height; i++)
+    for (j = 0; j < width; j++)
+        fscanf(fp_r, "%hhu", &img[i][j]);
+
+// 반전 모드 입력 및 적용
+printf("Enter the mode (0: horizontal, 1: vertical): ");
+scanf("%d", &mod);
+ImageFlip(img, img_new, width, height, mod);
+
+// 이미지 데이터 쓰기
+for (i = 0; i < height; i++) {
+    for (j = 0; j < width; j++)
+        fprintf(fp_w, "%hhu ", img_new[i][j]);
+    fprintf(fp_w, "\n");
+}
+
+fclose(fp_w);
+fclose(fp_r);
+
+// 메모리 해제
+for (i = 0; i < height; i++) {
+    free(img[i]);
+    free(img_new[i]);
+}
+free(img);
+free(img_new);
+
+snprintf(cmd, sizeof(cmd), "%s %s", IRFANVIEW_PATH, fname_new);
+system(cmd);
+
+return 0;
+}
+
+// 밝기 조정 함수 (필요 시 활성화)
+int ImageBrightness(unsigned char** in, unsigned char** out, int w, int h, int val)
+{
+int i, j, pixel;
+for (i = 0; i < h; i++) {
+for (j = 0; j < w; j++) {
+pixel = in[i][j] + val;
+if (pixel > 255) pixel = 255;
+else if (pixel < 0) pixel = 0;
+out[i][j] = (unsigned char)pixel;
+}
+}
+return 0;
+}
+
+// 이미지 뒤집기 (반전)
+int ImageFlip(unsigned char** in, unsigned char** out, int w, int h, int mode)
+{
+int i, j;
+if (mode == 0) { // 가로 반전
+for (i = 0; i < h; i++)
+for (j = 0; j < w; j++)
+out[i][j] = in[i][w - j - 1];
+} else { // 세로 반전
+for (i = 0; i < h; i++)
+for (j = 0; j < w; j++)
+out[i][j] = in[h - i - 1][j];
+}
+return 0;
+}
