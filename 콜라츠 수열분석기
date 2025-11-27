@@ -1,0 +1,32 @@
+#include <stdio.h>
+
+int collatz(int x){
+    int cnt=1, mx=x;
+
+    while(x != 1){
+        if(x % 2 == 0) x /= 2;
+        else x = 3*x + 1;
+        if(x > mx) mx = x;
+        cnt++;
+    }
+    printf("Len=%d, Max=%d\n", cnt, mx);
+    return cnt;
+}
+
+int main(){
+    int n;
+
+    printf("start: ");
+    scanf("%d", &n);
+
+    printf("Seq: ");
+    int x=n;
+    while(x != 1){
+        printf("%d ", x);
+        if(x%2==0) x/=2;
+        else x=3*x+1;
+    }
+    printf("1\n");
+
+    collatz(n);
+}
