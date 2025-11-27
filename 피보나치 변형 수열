@@ -1,0 +1,30 @@
+#include <stdio.h>
+
+void seq(int *a, int n){
+    a[0] = 1;
+    a[1] = 2;
+    for(int i=2;i<n;i++){
+        a[i] = 2*a[i-1] + a[i-2];
+    }
+}
+
+int sum_seq(int *a, int n){
+    int s=0;
+    for(int i=0;i<n;i++) s+=a[i];
+    return s;
+}
+
+int main(){
+    int n=12;
+    int a[50];
+
+    seq(a, n);
+
+    printf("Seq:\n");
+    for(int i=0;i<n;i++){
+        printf("%2d: %d\n", i+1, a[i]);
+    }
+
+    int s = sum_seq(a, n);
+    printf("Sum=%d\n", s);
+}
