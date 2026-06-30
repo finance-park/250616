@@ -1,0 +1,49 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+int main() {
+
+    int lotto[6];
+    int i, j;
+    int temp;
+    int same;
+
+    srand(time(NULL));
+
+    for(i = 0; i < 6; i++) {
+
+        while(1) {
+
+            same = 0;
+            lotto[i] = rand() % 45 + 1;
+
+            for(j = 0; j < i; j++) {
+                if(lotto[i] == lotto[j]) {
+                    same = 1;
+                    break;
+                }
+            }
+
+            if(same == 0)
+                break;
+        }
+    }
+
+    for(i = 0; i < 5; i++) {
+        for(j = i + 1; j < 6; j++) {
+            if(lotto[i] > lotto[j]) {
+                temp = lotto[i];
+                lotto[i] = lotto[j];
+                lotto[j] = temp;
+            }
+        }
+    }
+
+    printf("이번 주 로또 번호\n");
+
+    for(i = 0; i < 6; i++)
+        printf("%d ", lotto[i]);
+
+    return 0;
+}
